@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .serializers import KImageSerializer, StitchTypeSerializer, StitchTypeDesignSerializer, StitchSerializer, ProductSerializer, VendorSerializer
-from .models import KImage, Stitch, StitchType, StitchTypeDesign, Product, Vendor
+from .serializers import KImageSerializer, StitchTypeSerializer, StitchTypeDesignSerializer, StitchSerializer, ProductSerializer
+from .models import KImage, Stitch, StitchType, StitchTypeDesign, Product
 from rest_framework.parsers import MultiPartParser, FormParser,FileUploadParser
 
 from rest_framework import viewsets, generics
@@ -33,10 +33,32 @@ class ImageViewSet(viewsets.ModelViewSet):
 class StitchViewSet(viewsets.ModelViewSet):
     queryset = Stitch.objects.all()
     serializer_class = StitchSerializer
+    
+    def create(self, request, *args, **kwargs):
+        if request.FILES:
+            request.data['images'] = request.FILES
+
+        stitch_serializer = StitchSerializer(data= request.data)
+        if stitch_serializer.is_valid():
+            stitch_serializer.save()
+            return Response({'stitchId':stitch_serializer.instance.id}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(stitch_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class StitchTypeViewSet(viewsets.ModelViewSet):
     queryset = StitchType.objects.all()
     serializer_class = StitchTypeSerializer
+
+    def create(self, request, *args, **kwargs):
+        if request.FILES:
+            request.data['images'] = request.FILES
+
+        stitchtype_serializer = StitchTypeSerializer(data= request.data, context={'request': request})
+        if stitchtype_serializer.is_valid():
+            stitchtype_serializer.save()
+            return Response({'stitchTypeId':stitchtype_serializer.instance.id}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(stitchtype_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class StitchTypeDesignViewSet(viewsets.ModelViewSet):
     queryset = StitchTypeDesign.objects.all()
@@ -45,10 +67,7 @@ class StitchTypeDesignViewSet(viewsets.ModelViewSet):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-
-class VendorViewSet(viewsets.ModelViewSet):
-    queryset = Vendor.objects.all()
-    serializer_class = VendorSerializer
+ 
 
 
 

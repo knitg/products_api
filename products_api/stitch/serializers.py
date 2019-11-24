@@ -1,11 +1,11 @@
 from rest_framework import serializers
-from .models import KImage, Stitch, StitchType, StitchTypeDesign, Product, Vendor
+from .models import KImage, Stitch, StitchType, StitchTypeDesign, Product
+from rest_framework.parsers import MultiPartParser, FormParser,FileUploadParser
 
-class KImageSerializer(serializers.HyperlinkedModelSerializer): 
-    url = serializers.HyperlinkedIdentityField(view_name='upload-detail', source='image',)
+class KImageSerializer(serializers.HyperlinkedModelSerializer):  
     class Meta:
         model = KImage
-        fields = ('id', 'image','description', 'url')
+        fields = ('id', 'image','description')
         # fields = '__all__'
 
     def create(self, validated_data):
@@ -13,55 +13,61 @@ class KImageSerializer(serializers.HyperlinkedModelSerializer):
         img = KImage.objects.create(**validated_data)
         return img
 
-class VendorSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Vendor
-        fields = '__all__'
-
 class StitchSerializer(serializers.HyperlinkedModelSerializer):
+    images = KImageSerializer(many=True, required=False, allow_null=True)
     class Meta:
         model = Stitch
-        fields = '__all__'
-        
+        fields = ('stype', 'code', 'description', 'images')
+        parser_classes = (FormParser, MultiPartParser, FileUploadParser) # set parsers if not set in settings. Edited
+
+    def create(self, validated_data):
+        ## Image data 
+        stitch = Stitch.objects.create(**validated_data)
+        stitch.save()
+
+        if self.initial_data.get('images'):
+            validated_data['images'] = self.initial_data['images']
+            image_data = validated_data.pop('images')
+            for image in image_data:
+                c_image= image_data[image]
+                images = KImage.objects.create(image=c_image, description=self.initial_data.get('description'), source='stitch_'+str(stitch.id), size=c_image.size)
+                stitch.images.add(images)         
+
+        return stitch
+            
 
 class StitchTypeSerializer(serializers.HyperlinkedModelSerializer):
+    images = KImageSerializer(many=True, required=False, allow_null=True)
+    stitch = StitchSerializer(many=False, required=False, allow_null=True)
     class Meta:
         model = StitchType
-        fields = '__all__'
+        fields = ('stype', 'code', 'description', 'stitch', 'images')
 
+    def create(self, validated_data):
+        ## Image data 
+        stitchtype = StitchType.objects.create(**validated_data)
+        stitchtype.save()
+
+        if self.initial_data.get('images'):
+            validated_data['images'] = self.initial_data['images']
+            image_data = validated_data.pop('images')
+            for image in image_data:
+                c_image= image_data[image]
+                images = KImage.objects.create(image=c_image, description=self.initial_data.get('description'), source='stitchtype_'+str(stitchtype.id), size=c_image.size)
+                stitch.images.add(images)         
+
+        return stitchtype
+            
 class StitchTypeDesignSerializer(serializers.HyperlinkedModelSerializer):
+    images = KImageSerializer(many=False, required=False, allow_null=True)
     class Meta:
         model = StitchTypeDesign
-        fields = '__all__'
+        fields = ('sdesign', 'code', 'description', 'stitch_type', 'images')
 
 class ProductSerializer(serializers.HyperlinkedModelSerializer):
+    images = KImageSerializer(many=False, required=False, allow_null=True)
     # stitch = StitchSerializer(many=False)
     class Meta:
         model = Product
-        fields = '__all__'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        fields = ('code', 'title','description', 'stitch','stitch_type','stitch_type_design','vendor', 'images')
 

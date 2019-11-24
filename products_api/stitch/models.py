@@ -11,17 +11,8 @@ import sys
 
 # Create your models here.
 def uploadFolder(instance, filename):
-    imgpath= '/'.join(['stitch', str(instance.source), filename])
+    imgpath= '/'.join(['images', str(instance.source), filename])
     return imgpath
-
-class Vendor(models.Model):
-    # table in schema2, not managed by django
-    name = models.CharField('name', max_length=80)
-
-    class Meta:
-        managed = False
-        db_table = 'knit_vendor'
-
 
 class KImage(models.Model):
     description = models.CharField(max_length=255, blank=True, null=True)
@@ -33,16 +24,17 @@ class KImage(models.Model):
         managed = True
 
     def save(self, **kwargs):
-        #Opening the uploaded image
-        im = Image.open(self.image)
-        output = BytesIO()
-        # #Resize/modify the image
-        im = im.resize((800, 600), Image.ANTIALIAS)
-		# #after modifications, save it to the output
-        im.save(output, format='PNG', quality=100)
-        
-        #change the imagefield value to be the newley modifed image value
-        self.image = InMemoryUploadedFile(output,'ImageField', "%s.png" %self.image.name.split('.')[0], 'image/png', sys.getsizeof(output), None)
+        if self.image:
+            #Opening the uploaded image
+            im = Image.open(self.image)
+            output = BytesIO()
+            # #Resize/modify the image
+            im = im.resize((800, 600), Image.ANTIALIAS)
+            # #after modifications, save it to the output
+            im.save(output, format='PNG', quality=100)
+            
+            #change the imagefield value to be the newley modifed image value
+            self.image = InMemoryUploadedFile(output,'ImageField', "%s.png" %self.image.name.split('.')[0], 'image/png', sys.getsizeof(output), None)
 
         super(KImage, self).save()
 
@@ -52,7 +44,8 @@ class KImage(models.Model):
 
 class Stitch(models.Model):
     stype= models.CharField(null=True, max_length=80,  default=None)    
-    code = models.CharField(null=True, max_length=80,  default=None) 
+    code = models.CharField(null=True, max_length=80,  default=None)
+    images = models.ManyToManyField(KImage, blank=True, null=True, default=None)
     description = models.CharField(null=True, max_length=80,  default=None) 
     created_at = models.DateTimeField(default=now, editable=False)
     updated_at = models.DateTimeField(default=now, editable=False)
@@ -70,7 +63,8 @@ class Stitch(models.Model):
 
 class StitchType(models.Model):
     stype= models.CharField(null=True, max_length=80,  default=None) 
-    stitch = models.OneToOneField(Stitch, on_delete=models.CASCADE, default=None, null=False)   
+    stitch = models.ForeignKey(Stitch, on_delete=models.CASCADE, default=None, null=False) 
+    images = models.ManyToManyField(KImage, blank=True, null=True, default=None)
     code = models.CharField(null=True, max_length=80,  default=None) 
     description = models.CharField(null=True, max_length=120,  default=None) 
     created_at = models.DateTimeField(default=now, editable=False)
@@ -89,7 +83,8 @@ class StitchType(models.Model):
 
 class StitchTypeDesign(models.Model):
     sdesign= models.CharField(null=True, max_length=80,  default=None) 
-    stitch_type = models.OneToOneField(StitchType, on_delete=models.CASCADE, default=None, null=False)   
+    stitch_type = models.ForeignKey(StitchType, on_delete=models.CASCADE, default=None, null=False)
+    images = models.ManyToManyField(KImage, blank=True, null=True, default=None)
     code = models.CharField(null=True, max_length=80,  default=None) 
     description = models.CharField(null=True, max_length=120,  default=None) 
     created_at = models.DateTimeField(default=now, editable=False)
@@ -109,9 +104,10 @@ class Product(models.Model):
     code = models.CharField(null=True, max_length=80,  default=None) 
     title= models.CharField(null=True, max_length=80,  default=None) 
     description = models.CharField(null=True, max_length=120,  default=None) 
-    stitch = models.OneToOneField(Stitch, on_delete=models.CASCADE, default=None, null=True, blank=True)   
-    stitch_type = models.OneToOneField(StitchType, on_delete=models.CASCADE, default=None, null=True, blank=True)   
-    stitch_type_design = models.OneToOneField(StitchTypeDesign, on_delete=models.CASCADE, default=None, null=True, blank=True)
+    images = models.ManyToManyField(KImage, blank=True, null=True, default=None)
+    stitch = models.ForeignKey(Stitch, on_delete=models.CASCADE, default=None, null=True, blank=True)   
+    stitch_type = models.ForeignKey(StitchType, on_delete=models.CASCADE, default=None, null=True, blank=True)   
+    stitch_type_design = models.ForeignKey(StitchTypeDesign, on_delete=models.CASCADE, default=None, null=True, blank=True)
     vendor =  models.ForeignKey('self', null=True, related_name="product", on_delete=models.CASCADE)
     created_at = models.DateTimeField(default=now, editable=False)
     updated_at = models.DateTimeField(default=now, editable=False)
