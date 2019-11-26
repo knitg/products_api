@@ -37,14 +37,23 @@ class StitchSerializer(serializers.HyperlinkedModelSerializer):
             
 
 class StitchTypeSerializer(serializers.HyperlinkedModelSerializer):
+    stitch = StitchSerializer(many=False, required=False)
     images = KImageSerializer(many=True, required=False, allow_null=True)
-    stitch = StitchSerializer(many=False, required=False, allow_null=True)
+
     class Meta:
         model = StitchType
         fields = ('stype', 'code', 'description', 'stitch', 'images')
 
     def create(self, validated_data):
-        ## Image data 
+        ## Image data
+        if self.initial_data['stitch']:
+            stitchQuerySet = Stitch.objects.filter(id= self.initial_data['stitch'])
+            stitch = serializers.PrimaryKeyRelatedField(queryset=stitchQuerySet, many=False)
+
+            if len(stitchQuerySet):
+                validated_data['stitch'] = stitchQuerySet[0]
+            else:
+                return 
         stitchtype = StitchType.objects.create(**validated_data)
         stitchtype.save()
 
@@ -54,7 +63,7 @@ class StitchTypeSerializer(serializers.HyperlinkedModelSerializer):
             for image in image_data:
                 c_image= image_data[image]
                 images = KImage.objects.create(image=c_image, description=self.initial_data.get('description'), source='stitchtype_'+str(stitchtype.id), size=c_image.size)
-                stitch.images.add(images)         
+                stitchtype.images.add(images)         
 
         return stitchtype
             
