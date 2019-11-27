@@ -10,6 +10,7 @@ router.register(r'stitch-types', views.StitchTypeViewSet)
 router.register(r'stitch-type-design', views.StitchTypeDesignViewSet)
 router.register(r'product', views.ProductViewSet)
 router.register(r'productbyuser/(?P<user_id>\d+)', views.ProductByUserViewSet)
+router.register(r'stitchtype/(?P<stitch_id>\d+)', views.StitchTypeByStitchViewSet)
 
 urlpatterns = [ 
     path('', include(router.urls))

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializers import KImageSerializer, StitchTypeSerializer, StitchTypeDesignSerializer, StitchSerializer, ProductSerializer
+from .serializers import KImageSerializer, StitchTypeSerializer, StitchTypeDesignSerializer, StitchSerializer, ProductSerializer,StitchTypeByStitchSerializer
 from .models import KImage, Stitch, StitchType, StitchTypeDesign, Product
 from rest_framework.parsers import MultiPartParser, FormParser,FileUploadParser
 
@@ -80,6 +80,9 @@ class ProductViewSet(viewsets.ModelViewSet):
             return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
  
 
+'''
+## PRODUCTS BY USER
+'''
 class ProductByUserViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
@@ -87,6 +90,17 @@ class ProductByUserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         u_id = self.kwargs['user_id']
         return Product.objects.filter(user=u_id)
+
+'''
+## STICH TYPE BY STICH CATEGORY
+'''
+class StitchTypeByStitchViewSet(viewsets.ModelViewSet):
+    queryset = StitchType.objects.all()
+    serializer_class = StitchTypeByStitchSerializer
+
+    def get_queryset(self):
+        stitch = self.kwargs['stitch_id']
+        return StitchType.objects.filter(stitch=stitch)
 
 
 

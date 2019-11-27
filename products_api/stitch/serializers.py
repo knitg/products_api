@@ -107,3 +107,11 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 
         return product
 
+
+class StitchTypeByStitchSerializer(serializers.HyperlinkedModelSerializer):
+    # stitch = StitchSerializer(many=False, required=False)
+    images = KImageSerializer(many=True, required=False, allow_null=False)
+    # stitch = StitchSerializer(many=False)
+    class Meta:
+        model = StitchType
+        fields = ('stype', 'code', 'description', 'images')
