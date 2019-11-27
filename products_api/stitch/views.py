@@ -67,9 +67,26 @@ class StitchTypeDesignViewSet(viewsets.ModelViewSet):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+
+    def create(self, request, *args, **kwargs):
+        if request.FILES:
+            request.data['images'] = request.FILES 
+
+        product_serializer = ProductSerializer(data= request.data)
+        if product_serializer.is_valid():
+            product_serializer.save()
+            return Response({'productId':product_serializer.instance.id}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
  
 
+class ProductByUserViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
 
+    def get_queryset(self):
+        u_id = self.kwargs['user_id']
+        return Product.objects.filter(user=u_id)
 
 
 

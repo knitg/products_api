@@ -106,7 +106,7 @@ class Product(models.Model):
     stitch = models.ForeignKey(Stitch, on_delete=models.CASCADE, default=None, null=True, blank=True)   
     stitch_type = models.ForeignKey(StitchType, on_delete=models.CASCADE, default=None, null=True, blank=True)   
     stitch_type_design = models.ForeignKey(StitchTypeDesign, on_delete=models.CASCADE, default=None, null=True, blank=True)
-    vendor =  models.ForeignKey('self', null=True, related_name="product", on_delete=models.CASCADE)
+    user =  models.CharField(max_length=20,  default=None, blank=False, null=False)
     created_at = models.DateTimeField(default=now, editable=False)
     updated_at = models.DateTimeField(default=now, editable=False)
 
