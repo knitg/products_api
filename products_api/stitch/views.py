@@ -78,6 +78,15 @@ class ProductViewSet(viewsets.ModelViewSet):
             return Response({'productId':product_serializer.instance.id}, status=status.HTTP_201_CREATED)
         else:
             return Response(product_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+    def update(self, request, *args, **kwargs):
+        if request.FILES:
+            request.data['images'] = request.FILES 
+        
+        serializer = self.get_serializer(self.get_object(), data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
  
 
 '''

@@ -106,7 +106,41 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
                 product.images.add(images)         
 
         return product
+        
+    def update(self, instance, validated_data):
+        # Update the Foo instance
+        if self.initial_data.get('images'):
+            validated_data['images'] = self.initial_data['images']
+        instance.title = validated_data['title']
+        instance.description = validated_data['description']
+        instance.code = validated_data['code']
 
+        if self.initial_data['stitch']:
+            stitchQuerySet = Stitch.objects.filter(id= self.initial_data['stitch'])
+            # stitch = serializers.PrimaryKeyRelatedField(queryset=stitchQuerySet, many=False)
+            instance.stitch = Stitch.objects.filter(id= self.initial_data['stitch'])[0]
+        if self.initial_data['stitch_type']:
+            # stitchTypeQuerySet = StitchType.objects.filter(id= self.initial_data['stitch_type'])
+            # stitch_type = serializers.PrimaryKeyRelatedField(queryset=stitchTypeQuerySet, many=False)
+            instance.stitch_type = StitchType.objects.filter(id= self.initial_data['stitch_type'])[0]
+
+        instance.save()
+            
+        for e in instance.images.all():
+            instance.images.remove(e)
+            KImage.objects.get(id=e.id).delete()
+
+
+        if self.initial_data.get('images'):
+            validated_data['images'] = self.initial_data['images']
+            image_data = validated_data.pop('images')
+            
+            for image in image_data:
+                c_image= image_data[image]
+                images = KImage.objects.create(image=c_image, description=self.initial_data.get('description'), source='product_'+str(instance.id), size=c_image.size)
+                instance.images.add(images)
+
+        return instance
 
 class StitchTypeByStitchSerializer(serializers.HyperlinkedModelSerializer):
     # stitch = StitchSerializer(many=False, required=False)
