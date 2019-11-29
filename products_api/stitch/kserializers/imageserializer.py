@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from products_api.stitch.models import KImage
+from ..kmodels.imagemodel import KImage
 
 
 class KImageSerializer(serializers.HyperlinkedModelSerializer):  
