@@ -15,8 +15,7 @@ class StitchTypeViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         if request.FILES:
             request.data['images'] = request.FILES 
-
-        stitchtype_serializer = StitchTypeSerializer(data= request.data)
+        stitchtype_serializer = StitchTypeSerializer(data= request.data, context={'request': request})
         if stitchtype_serializer.is_valid():
             stitchtype_serializer.save()
             return Response({'stitchTypeId':stitchtype_serializer.instance.id}, status=status.HTTP_201_CREATED)

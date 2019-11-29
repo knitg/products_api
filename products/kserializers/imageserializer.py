@@ -15,22 +15,14 @@ class KImageSerializer(serializers.HyperlinkedModelSerializer):
 
     def update(self, instance, validated_data):
         # Update the Foo instance
-        instance.description = validated_data['description']
-
-        
-        instance.save()
+        instance.description = validated_data['description'] 
 
         if self.initial_data.get('images'):
             validated_data['images'] = self.initial_data['images']
             image_data = validated_data.pop('images')
 
-            ### Remove relational images if any ####
-            # for e in instance.images.all():
-            #     instance.images.remove(e)
-            #     KImage.objects.get(id=e.id).delete()
-            # for image in image_data:
-            #     c_image= image_data[image]
-            #     images = KImage.objects.create(image=c_image, description=self.initial_data.get('description'), source='product_'+str(instance.id), size=c_image.size)
-            #     instance.images.add(images)
-
+            for image in image_data:
+                c_image= image_data[image]
+                instance.image = c_image.name 
+        instance.save() 
         return instance

@@ -10,16 +10,17 @@ from ..kmodels.stitchdesignmodel import StitchTypeDesign
 from ..kmodels.productmodel import Product
 
 
-class StitchTypeSerializer(serializers.HyperlinkedModelSerializer):
+class StitchTypeSerializer(serializers.ModelSerializer):
     stitch = StitchSerializer(many=False, required=False)
     images = KImageSerializer(many=True, required=False, allow_null=True)
 
     class Meta:
         model = StitchType
-        fields = ('stype', 'code', 'description', 'stitch', 'images')
+        fields = ('id', 'stype', 'code', 'description', 'stitch', 'images')
 
     def create(self, validated_data):
         ## Image data
+        validated_data['code'] = validated_data['code'].upper() if validated_data['code'] else None
         if self.initial_data['stitch']:
             stitchQuerySet = Stitch.objects.filter(id= self.initial_data['stitch'])
             stitch = serializers.PrimaryKeyRelatedField(queryset=stitchQuerySet, many=False)
@@ -38,6 +39,32 @@ class StitchTypeSerializer(serializers.HyperlinkedModelSerializer):
                 stitchtype.images.add(images)         
 
         return stitchtype
+
+    def update(self, instance, validated_data):
+        # Update the Foo instance
+        instance.stype = validated_data['stype']
+        instance.description = validated_data['description']
+        instance.code =  validated_data['code'].upper() if validated_data['code'] else instance.code   
+        
+        if self.initial_data['stitch']:
+            stitchQuerySet = Stitch.objects.filter(id= self.initial_data['stitch'])
+            instance.stitch = stitchQuerySet[0] if len(stitchQuerySet) else None        
+        instance.save()
+
+        if self.initial_data.get('images'):
+            validated_data['images'] = self.initial_data['images']
+            image_data = validated_data.pop('images')
+
+            ### Remove relational images if any ####
+            for e in instance.images.all():
+                instance.images.remove(e)
+                KImage.objects.get(id=e.id).delete()
+            for image in image_data:
+                c_image= image_data[image]
+                images = KImage.objects.create(image=c_image, description=self.initial_data.get('description'), source='stitchtype_'+str(instance.id), size=c_image.size)
+                instance.images.add(images)
+
+        return instance
 
 class StitchTypeByStitchSerializer(serializers.HyperlinkedModelSerializer):
     # stitch = StitchSerializer(many=False, required=False)

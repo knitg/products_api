@@ -11,6 +11,15 @@ class StitchTypeDesignViewSet(viewsets.ModelViewSet):
     queryset = StitchTypeDesign.objects.all()
     serializer_class = StitchTypeDesignSerializer
 
+    def create(self, request, *args, **kwargs):
+        if request.FILES:
+            request.data['images'] = request.FILES 
+        stitchdesign_serializer = StitchTypeDesignSerializer(data= request.data, context={'request': request})
+        if stitchdesign_serializer.is_valid():
+            stitchdesign_serializer.save()
+            return Response({'stitchTypeDesignId':stitchdesign_serializer.instance.id}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(stitchtype_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def update(self, request, *args, **kwargs):
         if request.FILES:

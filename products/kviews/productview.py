@@ -25,7 +25,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             
     def update(self, request, *args, **kwargs):
         if request.FILES:
-            request.data['images'] = request.FILES        
+            request.data['images'] = request.FILES
         serializer = self.get_serializer(self.get_object(), data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
