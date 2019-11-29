@@ -3,7 +3,7 @@ from rest_framework import routers
 from . import views
 from django.conf.urls import url
 
-router = routers.DefaultRouter()
+router = routers.DefaultRouter(trailing_slash=False)
 router.register(r'upload', views.ImageViewSet)
 router.register(r'stitch', views.StitchViewSet)
 router.register(r'stitch-types', views.StitchTypeViewSet)

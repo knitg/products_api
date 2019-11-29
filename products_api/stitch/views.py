@@ -1,7 +1,12 @@
-from django.shortcuts import render
-from .serializers import KImageSerializer, StitchTypeSerializer, StitchTypeDesignSerializer, StitchSerializer, ProductSerializer,StitchTypeByStitchSerializer
+from django.shortcuts import render 
 from .models import KImage, Stitch, StitchType, StitchTypeDesign, Product
 from rest_framework.parsers import MultiPartParser, FormParser,FileUploadParser
+
+from .kserializers.imageserializer import KImageSerializer
+from .kserializers.stitchserializer import StitchSerializer
+from .kserializers.stitchtypeserializer import StitchTypeSerializer, StitchTypeByStitchSerializer
+from .kserializers.stitchdesignserializer import StitchTypeDesignSerializer
+from .kserializers.productserializer import ProductSerializer
 
 from rest_framework import viewsets, generics
 from rest_framework.response import Response
