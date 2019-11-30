@@ -77,3 +77,14 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
                 instance.images.add(images)
 
         return instance
+
+###
+#   Product Serializer returns products with foreignkey hyperlinks
+###
+
+class ProductLinkSerializer(serializers.HyperlinkedModelSerializer):
+    
+    images = KImageSerializer(many=True, required=False, allow_null=False)
+    class Meta:
+        model = Product
+        fields = ('id','code', 'title','description', 'stitch','stitch_type','stitch_type_design','user', 'images')

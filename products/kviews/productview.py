@@ -6,7 +6,7 @@ from rest_framework import status
 
 from ..kmodels.imagemodel import KImage
 from ..kmodels.productmodel import Product
-from ..kserializers.productserializer import ProductSerializer
+from ..kserializers.productserializer import ProductSerializer, ProductLinkSerializer
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
@@ -44,12 +44,38 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 
 '''
+        PRODUCTS BY STITCH
+'''
+class ProductByStitchViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductLinkSerializer
+
+    def get_queryset(self):
+        s_id = self.kwargs['stitch_id']
+        return Product.objects.filter(stitch=s_id)
+
+
+'''
+        PRODUCTS BY STITCH TYPE
+'''
+class ProductByStitchTypeViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductLinkSerializer
+
+    def get_queryset(self):
+        s_id = self.kwargs['stitch_type_id']
+        return Product.objects.filter(stitch_type=s_id)
+
+
+'''
         PRODUCTS BY USER
 '''
 class ProductByUserViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+    serializer_class = ProductLinkSerializer
 
     def get_queryset(self):
         u_id = self.kwargs['user_id']
         return Product.objects.filter(user=u_id)
+
+
